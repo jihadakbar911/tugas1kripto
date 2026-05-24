@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Riwayat — CryptoSim{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="/" class="back-btn">←</a>
+        <h1>📜 Riwayat Enkripsi/Dekripsi</h1>
+    </div>
+
+    {% if history %}
+    <div style="margin-bottom:1rem; text-align:right">
+        <button class="btn-danger" onclick="clearHistory()">🗑 Hapus Semua Riwayat</button>
+    </div>
+    <div class="form-section" style="overflow-x:auto">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Waktu</th>
+                    <th>Algoritma</th>
+                    <th>Mode</th>
+                    <th>Input</th>
+                    <th>Key</th>
+                    <th>Output</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in history %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.timestamp }}</td>
+                    <td><span class="algo-tag">{{ item.algorithm }}</span></td>
+                    <td><span class="mode-tag {{ 'encrypt' if 'Enkripsi' in item.mode else 'decrypt' }}">{{ item.mode }}</span></td>
+                    <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ item.input }}">{{ item.input }}</td>
+                    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ item.key_display }}">{{ item.key_display }}</td>
+                    <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ item.output }}">{{ item.output }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="form-section">
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>Belum ada riwayat enkripsi/dekripsi.</p>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem">Mulai dengan memilih salah satu algoritma cipher.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function clearHistory() {
+    if (!confirm('Hapus semua riwayat?')) return;
+    await fetch('/api/history/clear', {method:'POST'});
+    location.reload();
+}
+</script>
+{% endblock %}

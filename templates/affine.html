@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Affine Cipher — CryptoSim{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="/" class="back-btn">←</a>
+        <h1>Affine Cipher</h1>
+        <span class="algo-badge">Substitusi Matematis</span>
+    </div>
+
+    <div class="form-section">
+        <h2><span class="section-icon">⚙</span> Konfigurasi</h2>
+        <div class="mode-toggle">
+            <button class="active" onclick="setMode('encrypt', this)">🔒 Enkripsi</button>
+            <button onclick="setMode('decrypt', this)">🔓 Dekripsi</button>
+        </div>
+        <div class="form-group">
+            <label for="inputText">Teks Input</label>
+            <textarea id="inputText" placeholder="Masukkan teks yang akan diproses..."></textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+            <div class="form-group">
+                <label for="inputA">Nilai a</label>
+                <input type="number" id="inputA" value="5" min="1" max="25">
+                <p class="hint">Harus coprime dengan 26: 1,3,5,7,9,11,15,17,19,21,23,25</p>
+            </div>
+            <div class="form-group">
+                <label for="inputB">Nilai b</label>
+                <input type="number" id="inputB" value="8" min="0" max="25">
+                <p class="hint">Nilai pergeseran (0-25)</p>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="processAffine()">Proses</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="result-section" id="resultSection">
+        <h2><span class="section-icon">📋</span> Hasil</h2>
+        <div class="result-formula" id="resultFormula"></div>
+        <div id="inverseInfo" style="margin-bottom:1rem"></div>
+        <div class="result-output">
+            <button class="copy-btn" onclick="copyResult()" title="Salin">📋</button>
+            <span id="resultText"></span>
+        </div>
+        <div class="steps-container">
+            <div class="steps-header" onclick="toggleSteps()">
+                <h3><span class="section-icon">📝</span> Langkah-langkah Proses</h3>
+                <span class="toggle-icon" id="toggleIcon">▼</span>
+            </div>
+            <div class="steps-list" id="stepsList"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let currentMode = 'encrypt';
+function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+async function processAffine() {
+    const text = document.getElementById('inputText').value;
+    const a = parseInt(document.getElementById('inputA').value);
+    const b = parseInt(document.getElementById('inputB').value);
+    if (!text) return showError('Teks tidak boleh kosong');
+
+    hideError();
+    try {
+        const res = await fetch('/api/affine', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text, a, b, mode: currentMode})
+        });
+        const data = await res.json();
+        if (data.error) return showError(data.error);
+
+        document.getElementById('resultFormula').textContent = `Rumus: ${data.formula}`;
+        document.getElementById('resultText').textContent = data.output;
+
+        const invDiv = document.getElementById('inverseInfo');
+        if (data.inverse_detail) {
+            invDiv.innerHTML = `<div class="result-formula">${escapeHtml(data.inverse_detail)}</div>`;
+        } else { invDiv.innerHTML = ''; }
+
+        const stepsList = document.getElementById('stepsList');
+        stepsList.innerHTML = '';
+        data.steps.forEach((step, i) => {
+            const div = document.createElement('div');
+            div.className = 'step-item';
+            div.style.animationDelay = `${i * 0.05}s`;
+            div.innerHTML = `<span class="step-num">${step.position}</span> ${escapeHtml(step.detail)}`;
+            stepsList.appendChild(div);
+        });
+
+        document.getElementById('resultSection').classList.add('visible');
+        document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});
+    } catch(e) { showError('Gagal: ' + e.message); }
+}
+</script>
+{% endblock %}

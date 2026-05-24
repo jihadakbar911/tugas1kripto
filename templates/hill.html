@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Hill Cipher — CryptoSim{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="/" class="back-btn">←</a>
+        <h1>Hill Cipher</h1>
+        <span class="algo-badge">Berbasis Matriks</span>
+    </div>
+
+    <div class="form-section">
+        <h2><span class="section-icon">⚙</span> Konfigurasi</h2>
+        <div class="mode-toggle">
+            <button class="active" onclick="setMode('encrypt', this)">🔒 Enkripsi</button>
+            <button onclick="setMode('decrypt', this)">🔓 Dekripsi</button>
+        </div>
+        <div class="form-group">
+            <label for="inputText">Teks Input</label>
+            <textarea id="inputText" placeholder="Masukkan teks (hanya huruf yang akan diproses)..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Ukuran Matriks</label>
+            <div class="mode-toggle" style="max-width:250px">
+                <button class="active" onclick="setMatrixSize(2, this)">2 × 2</button>
+                <button onclick="setMatrixSize(3, this)">3 × 3</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Matriks Kunci K</label>
+            <div class="matrix-wrapper">
+                <span class="matrix-bracket">[</span>
+                <div class="matrix-grid size-2" id="matrixGrid">
+                    <input type="number" value="6" data-r="0" data-c="0">
+                    <input type="number" value="24" data-r="0" data-c="1">
+                    <input type="number" value="1" data-r="1" data-c="0">
+                    <input type="number" value="13" data-r="1" data-c="1">
+                </div>
+                <span class="matrix-bracket">]</span>
+            </div>
+            <p class="hint">Determinan matriks harus coprime dengan 26</p>
+        </div>
+        <button class="btn-primary" onclick="processHill()">Proses</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="result-section" id="resultSection">
+        <h2><span class="section-icon">📋</span> Hasil</h2>
+        <div class="result-formula" id="resultFormula"></div>
+        <div id="matrixInfo"></div>
+        <div class="result-output">
+            <button class="copy-btn" onclick="copyResult()" title="Salin">📋</button>
+            <span id="resultText"></span>
+        </div>
+        <div class="steps-container">
+            <div class="steps-header" onclick="toggleSteps()">
+                <h3><span class="section-icon">📝</span> Langkah-langkah Proses</h3>
+                <span class="toggle-icon" id="toggleIcon">▼</span>
+            </div>
+            <div class="steps-list" id="stepsList"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let currentMode = 'encrypt';
+let matrixSize = 2;
+
+function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-toggle button')[0].parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function setMatrixSize(size, btn) {
+    matrixSize = size;
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const grid = document.getElementById('matrixGrid');
+    grid.className = `matrix-grid size-${size}`;
+    grid.innerHTML = '';
+    const defaults2 = [[6,24],[1,13]];
+    const defaults3 = [[6,24,1],[13,16,10],[20,17,15]];
+    const defs = size === 2 ? defaults2 : defaults3;
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            const inp = document.createElement('input');
+            inp.type = 'number'; inp.value = defs[r][c];
+            inp.dataset.r = r; inp.dataset.c = c;
+            grid.appendChild(inp);
+        }
+    }
+}
+
+function getMatrix() {
+    const inputs = document.querySelectorAll('#matrixGrid input');
+    const m = [];
+    for (let r = 0; r < matrixSize; r++) m.push([]);
+    inputs.forEach(inp => {
+        m[parseInt(inp.dataset.r)].push(parseInt(inp.value) || 0);
+    });
+    return m;
+}
+
+function renderMatrix(matrix, className) {
+    const n = matrix.length;
+    let html = `<div class="matrix-display m${n}">`;
+    matrix.forEach(row => row.forEach(v => {
+        html += `<div class="cell">${v}</div>`;
+    }));
+    html += '</div>';
+    return html;
+}
+
+async function processHill() {
+    const text = document.getElementById('inputText').value;
+    const matrix = getMatrix();
+    if (!text) return showError('Teks tidak boleh kosong');
+
+    hideError();
+    try {
+        const res = await fetch('/api/hill', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text, matrix, mode: currentMode})
+        });
+        const data = await res.json();
+        if (data.error) return showError(data.error);
+
+        document.getElementById('resultFormula').textContent = `Rumus: ${data.formula}`;
+        document.getElementById('resultText').textContent = data.output;
+
+        // Matrix info
+        let infoHtml = '';
+        if (data.padding_info) infoHtml += `<div class="result-formula">⚠️ ${escapeHtml(data.padding_info)}</div>`;
+        infoHtml += `<div style="margin:0.8rem 0"><strong>Matriks Kunci (${data.matrix_size}):</strong><br>${renderMatrix(data.key_matrix)}`;
+        infoHtml += `<p class="hint" style="margin-top:0.5rem">Determinan = ${data.determinant} | det mod 26 = ${data.determinant_mod26}</p></div>`;
+        if (data.inverse_matrix) {
+            infoHtml += `<div style="margin:0.8rem 0"><strong>Matriks Invers K⁻¹ mod 26:</strong><br>${renderMatrix(data.inverse_matrix)}</div>`;
+        }
+        document.getElementById('matrixInfo').innerHTML = infoHtml;
+
+        // Steps - block-by-block
+        const stepsList = document.getElementById('stepsList');
+        stepsList.innerHTML = '';
+        data.steps.forEach((step, i) => {
+            const div = document.createElement('div');
+            div.className = 'step-item';
+            div.style.animationDelay = `${i * 0.1}s`;
+            let calcHtml = `<span class="step-num">${step.block_index}</span> <strong>Blok "${step.block_text}"</strong> → vektor ${JSON.stringify(step.input_vector)}<br>`;
+            step.calc_details.forEach((cd, ci) => {
+                calcHtml += `&nbsp;&nbsp;Baris ${ci+1}: ${cd.terms} = ${cd.sum} mod 26 = <span class="step-highlight">${cd.mod_result}</span><br>`;
+            });
+            calcHtml += `&nbsp;&nbsp;Hasil: ${JSON.stringify(step.result_vector)} → "<span class="step-highlight">${step.result_text}</span>"`;
+            div.innerHTML = calcHtml;
+            stepsList.appendChild(div);
+        });
+
+        document.getElementById('resultSection').classList.add('visible');
+        document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});
+    } catch(e) { showError('Gagal: ' + e.message); }
+}
+</script>
+{% endblock %}

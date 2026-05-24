@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}CryptoSim — Simulasi Kriptografi Klasik{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">🎓 Tugas 1 Kriptografi — Semester 6</div>
+        <h1>Simulasi Kriptografi Klasik</h1>
+        <p>Eksplorasi 5 algoritma kriptografi klasik secara interaktif dengan visualisasi proses enkripsi & dekripsi
+            langkah demi langkah.</p>
+    </div>
+</section>
+
+<section class="cards-grid">
+    <a href="/caesar" class="cipher-card" id="card-caesar">
+        <div class="card-icon c1">🅰</div>
+        <h3>Caesar Cipher</h3>
+        <p>Substitusi monoalfabetik dengan pergeseran karakter. Key: nilai shift (1-25).</p>
+    </a>
+    <a href="/vigenere" class="cipher-card" id="card-vigenere">
+        <div class="card-icon c2">🔑</div>
+        <h3>Vigenère Cipher</h3>
+        <p>Substitusi polialfabetik menggunakan kata kunci berulang.</p>
+    </a>
+    <a href="/affine" class="cipher-card" id="card-affine">
+        <div class="card-icon c3">🔢</div>
+        <h3>Affine Cipher</h3>
+        <p>Kombinasi perkalian dan penjumlahan modular dengan kunci (a, b).</p>
+    </a>
+    <a href="/hill" class="cipher-card" id="card-hill">
+        <div class="card-icon c4">📊</div>
+        <h3>Hill Cipher</h3>
+        <p>Enkripsi berbasis perkalian matriks. Mendukung matriks 2×2 dan 3×3.</p>
+    </a>
+    <a href="/playfair" class="cipher-card" id="card-playfair">
+        <div class="card-icon c5">📋</div>
+        <h3>Playfair Cipher</h3>
+        <p>Enkripsi digraf menggunakan tabel 5×5 dari kata kunci.</p>
+    </a>
+</section>
+{% endblock %}

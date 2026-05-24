@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Caesar Cipher — CryptoSim{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="/" class="back-btn">←</a>
+        <h1>Caesar Cipher</h1>
+        <span class="algo-badge">Substitusi Monoalfabetik</span>
+    </div>
+
+    <div class="form-section">
+        <h2><span class="section-icon">⚙</span> Konfigurasi</h2>
+        <div class="mode-toggle">
+            <button class="active" onclick="setMode('encrypt', this)" id="btn-encrypt">🔒 Enkripsi</button>
+            <button onclick="setMode('decrypt', this)" id="btn-decrypt">🔓 Dekripsi</button>
+        </div>
+        <div class="form-group">
+            <label for="inputText">Teks Input</label>
+            <textarea id="inputText" placeholder="Masukkan teks yang akan diproses..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="inputKey">Shift Key (1-25)</label>
+            <input type="number" id="inputKey" min="1" max="25" value="3" placeholder="Masukkan nilai shift">
+            <p class="hint">Contoh: Key = 3 → A menjadi D</p>
+        </div>
+        <button class="btn-primary" onclick="processCaesar()" id="processBtn">
+            <span class="spinner" style="display:none" id="btnSpinner"></span>
+            Proses
+        </button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="result-section" id="resultSection">
+        <h2><span class="section-icon">📋</span> Hasil</h2>
+        <div class="result-formula" id="resultFormula"></div>
+        <div class="result-output" id="resultOutput">
+            <button class="copy-btn" onclick="copyResult()" title="Salin">📋</button>
+            <span id="resultText"></span>
+        </div>
+        <div class="steps-container">
+            <div class="steps-header" onclick="toggleSteps()">
+                <h3><span class="section-icon">📝</span> Langkah-langkah Proses</h3>
+                <span class="toggle-icon" id="toggleIcon">▼</span>
+            </div>
+            <div class="steps-list" id="stepsList"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let currentMode = 'encrypt';
+
+function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+async function processCaesar() {
+    const text = document.getElementById('inputText').value;
+    const key = parseInt(document.getElementById('inputKey').value);
+    
+    if (!text) return showError('Teks tidak boleh kosong');
+    if (isNaN(key) || key < 1 || key > 25) return showError('Key harus antara 1-25');
+
+    hideError();
+    showLoading(true);
+    
+    try {
+        const res = await fetch('/api/caesar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text, key, mode: currentMode})
+        });
+        const data = await res.json();
+        if (data.error) return showError(data.error);
+        displayResult(data);
+    } catch(e) {
+        showError('Gagal memproses: ' + e.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function displayResult(data) {
+    document.getElementById('resultFormula').textContent = `Rumus: ${data.formula}`;
+    document.getElementById('resultText').textContent = data.output;
+    
+    const stepsList = document.getElementById('stepsList');
+    stepsList.innerHTML = '';
+    data.steps.forEach((step, i) => {
+        const div = document.createElement('div');
+        div.className = 'step-item';
+        div.style.animationDelay = `${i * 0.05}s`;
+        div.innerHTML = `<span class="step-num">${step.position}</span> ${escapeHtml(step.detail)}`;
+        stepsList.appendChild(div);
+    });
+
+    document.getElementById('resultSection').classList.add('visible');
+    document.getElementById('resultSection').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+</script>
+{% endblock %}

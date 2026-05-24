@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Vigenère Cipher — CryptoSim{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="/" class="back-btn">←</a>
+        <h1>Vigenère Cipher</h1>
+        <span class="algo-badge">Substitusi Polialfabetik</span>
+    </div>
+
+    <div class="form-section">
+        <h2><span class="section-icon">⚙</span> Konfigurasi</h2>
+        <div class="mode-toggle">
+            <button class="active" onclick="setMode('encrypt', this)">🔒 Enkripsi</button>
+            <button onclick="setMode('decrypt', this)">🔓 Dekripsi</button>
+        </div>
+        <div class="form-group">
+            <label for="inputText">Teks Input</label>
+            <textarea id="inputText" placeholder="Masukkan teks yang akan diproses..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="inputKey">Kata Kunci</label>
+            <input type="text" id="inputKey" placeholder="Masukkan kata kunci (huruf saja)">
+            <p class="hint">Contoh: KEY, CIPHER, SECRET</p>
+        </div>
+        <button class="btn-primary" onclick="processVigenere()">Proses</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="result-section" id="resultSection">
+        <h2><span class="section-icon">📋</span> Hasil</h2>
+        <div class="result-formula" id="resultFormula"></div>
+        <div id="keyExtension" style="margin-bottom:1rem"></div>
+        <div class="result-output">
+            <button class="copy-btn" onclick="copyResult()" title="Salin">📋</button>
+            <span id="resultText"></span>
+        </div>
+        <div class="steps-container">
+            <div class="steps-header" onclick="toggleSteps()">
+                <h3><span class="section-icon">📝</span> Langkah-langkah Proses</h3>
+                <span class="toggle-icon" id="toggleIcon">▼</span>
+            </div>
+            <div class="steps-list" id="stepsList"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let currentMode = 'encrypt';
+function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+async function processVigenere() {
+    const text = document.getElementById('inputText').value;
+    const key = document.getElementById('inputKey').value;
+    if (!text) return showError('Teks tidak boleh kosong');
+    if (!key) return showError('Kata kunci tidak boleh kosong');
+
+    hideError();
+    try {
+        const res = await fetch('/api/vigenere', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text, key, mode: currentMode})
+        });
+        const data = await res.json();
+        if (data.error) return showError(data.error);
+
+        document.getElementById('resultFormula').textContent = `Rumus: ${data.formula}`;
+        document.getElementById('resultText').textContent = data.output;
+
+        // Key extension display
+        const keDiv = document.getElementById('keyExtension');
+        keDiv.innerHTML = `<div class="result-formula">Pengulangan Kunci: <strong>${escapeHtml(data.key_extension)}</strong></div>`;
+
+        const stepsList = document.getElementById('stepsList');
+        stepsList.innerHTML = '';
+        data.steps.forEach((step, i) => {
+            const div = document.createElement('div');
+            div.className = 'step-item';
+            div.style.animationDelay = `${i * 0.05}s`;
+            div.innerHTML = `<span class="step-num">${step.position}</span> ${escapeHtml(step.detail)}`;
+            stepsList.appendChild(div);
+        });
+
+        document.getElementById('resultSection').classList.add('visible');
+        document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});
+    } catch(e) { showError('Gagal: ' + e.message); }
+}
+</script>
+{% endblock %}

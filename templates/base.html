@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Aplikasi Web Simulasi Kriptografi Klasik - Caesar, Vigenere, Affine, Hill, Playfair Cipher">
+    <title>{% block title %}Kriptografi Klasik{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <span class="brand-icon">🔐</span>
+            <span>CryptoSim</span>
+        </a>
+        <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="/" class="{% if request.path == '/' %}active{% endif %}">Beranda</a></li>
+            <li><a href="/caesar" class="{% if request.path == '/caesar' %}active{% endif %}">Caesar</a></li>
+            <li><a href="/vigenere" class="{% if request.path == '/vigenere' %}active{% endif %}">Vigenère</a></li>
+            <li><a href="/affine" class="{% if request.path == '/affine' %}active{% endif %}">Affine</a></li>
+            <li><a href="/hill" class="{% if request.path == '/hill' %}active{% endif %}">Hill</a></li>
+            <li><a href="/playfair" class="{% if request.path == '/playfair' %}active{% endif %}">Playfair</a></li>
+            <li><a href="/history" class="{% if request.path == '/history' %}active{% endif %}">📜 Riwayat</a></li>
+        </ul>
+        <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode"
+                aria-label="Toggle theme">🌙</button>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>Simulasi Kriptografi Klasik &copy; 2026 — Tugas 1 Kriptografi Semester 6</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
