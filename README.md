@@ -1,4 +1,4 @@
-# 🔐 CryptoSim — Web Simulasi Kriptografi Klasik
+#  CryptoSim — Web Simulasi Kriptografi Klasik
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Flask Version](https://img.shields.io/badge/flask-3.1.1-green.svg)](https://flask.palletsprojects.com/)
@@ -10,7 +10,7 @@ Aplikasi ini dibangun dengan menggunakan framework **Flask** untuk backend dan *
 
 ---
 
-## 🚀 Fitur Utama
+##  Fitur Utama
 
 1. **Simulasi Interaktif 5 Ciphers Klasik**: Proses enkripsi & dekripsi dapat disimulasikan secara langsung.
 2. **Validasi Kunci yang Ketat**:
@@ -22,37 +22,37 @@ Aplikasi ini dibangun dengan menggunakan framework **Flask** untuk backend dan *
 
 ---
 
-## 🎨 Algoritma Kriptografi yang Didukung
+##  Algoritma Kriptografi yang Didukung
 
-### 1. 🅰 Caesar Cipher
+### 1. Caesar Cipher
 Algoritma tertua dan paling sederhana yang menggunakan pergeseran alfabet secara tetap. Setiap huruf pada plaintext digantikan oleh huruf lain yang memiliki selisih posisi tertentu (shift $K$).
 - **Rumus Enkripsi**: $C \equiv (P + K) \pmod{26}$
 - **Rumus Dekripsi**: $P \equiv (C - K) \pmod{26}$
 
-### 2. 🔑 Vigenère Cipher
+### 2.  Vigenère Cipher
 Metode enkripsi alfabet majemuk (polyalphabetic substitution) dengan menggunakan kata kunci (keyword). Panjang kata kunci akan diulang atau dicocokkan dengan panjang plaintext.
 - **Rumus Enkripsi**: $C_i \equiv (P_i + K_i) \pmod{26}$
 - **Rumus Dekripsi**: $P_i \equiv (C_i - K_i) \pmod{26}$
 
-### 3. 🔢 Affine Cipher
+### 3.  Affine Cipher
 Perluasan dari Caesar Cipher di mana plaintext dikalikan dengan kunci $a$ kemudian ditambahkan kunci $b$ terhadap modulo 26.
 - Syarat: Kunci $a$ harus relatif prima dengan 26 ($\gcd(a, 26) = 1$).
 - **Rumus Enkripsi**: $C \equiv (a \cdot P + b) \pmod{26}$
 - **Rumus Dekripsi**: $P \equiv a^{-1} \cdot (C - b) \pmod{26}$ (di mana $a^{-1}$ adalah modular multiplicative inverse dari $a$ modulo 26).
 
-### 4. 📊 Hill Cipher
+### 4.  Hill Cipher
 Algoritma kriptografi kunci simetris berbasis **Aljabar Linear**. Plaintext dikelompokkan menjadi blok-blok berukuran $m$, kemudian dikalikan dengan matriks kunci berukuran $m \times m$ modulo 26. Aplikasi ini mendukung matriks berukuran $2\times2$ dan $3\times3$.
 - Syarat: Matriks kunci harus memiliki determinan yang memiliki invers modulo 26 ($\gcd(\det(K), 26) = 1$).
 - **Rumus Enkripsi**: $C \equiv K \cdot P \pmod{26}$
 - **Rumus Dekripsi**: $P \equiv K^{-1} \cdot C \pmod{26}$
 
-### 5. 📋 Playfair Cipher
+### 5.  Playfair Cipher
 Teknik enkripsi simetris yang mengenkripsi pasangan huruf (digraf) bukan huruf tunggal. Menggunakan tabel berukuran $5 \times 5$ yang berisi kata kunci yang telah dibersihkan (huruf duplikat dihapus, dan biasanya menggabungkan huruf 'J' ke dalam 'I').
 - Mengikuti aturan pemrosesan digraf baris yang sama, kolom yang sama, atau membentuk persegi panjang.
 
 ---
 
-## 📂 Struktur Direktori Proyek
+##  Struktur Direktori Proyek
 
 ```text
 UTS/
@@ -88,7 +88,7 @@ UTS/
 
 ---
 
-## 🛠️ Panduan Instalasi & Cara Menjalankan
+## Panduan Instalasi & Cara Menjalankan
 
 Ikuti langkah-langkah berikut untuk menjalankan aplikasi CryptoSim di komputer lokal Anda:
 
@@ -133,12 +133,12 @@ http://127.0.0.1:5000/
 
 ---
 
-## 📝 Kontributor
+##  Kontributor
 
 * **Jihad Akbar** - [jihadakbar911](https://github.com/jihadakbar911)
 
 ---
 
-## ⚖️ Lisensi
+##  Lisensi
 
 Proyek ini dilisensikan di bawah **MIT License**. Lihat file [LICENSE](LICENSE) jika tersedia untuk informasi lebih lanjut.
